@@ -55,7 +55,7 @@ public class BankService {
         bank.setCountry(bankDTO.getCountryName());
         String swiftCode = bankDTO.getSwiftCode().toUpperCase();
 
-        if (swiftCode.length() != 11 || (bankDTO.getIsHeadquarter() && !swiftCode.endsWith("XXX"))) {
+        if (swiftCode.length() != 11 || (bankDTO.isHeadquarter() && !swiftCode.endsWith("XXX"))) {
             throw new SwiftCodeException("Swift code is invalid or incompatible with other parameters");
         }
 
@@ -66,8 +66,10 @@ public class BankService {
             bankRepository.save(bank);
             List<Bank> banks = bankRepository.findBySwiftStartsWith(bank.getSwift().substring(0, bank.getSwift().length() - 3));
             for(Bank b : banks) {
-                HeadquarterBranch headquarterBranch = new HeadquarterBranch(bank, b);
-                headquarterBranchRepository.save(headquarterBranch);
+                if(!b.getSwift().equals(bank.getSwift())) {
+                    HeadquarterBranch headquarterBranch = new HeadquarterBranch(bank, b);
+                    headquarterBranchRepository.save(headquarterBranch);
+                }
             }
         } else {
             bank.setIsHeadquarter(false);
